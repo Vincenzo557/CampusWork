@@ -1,0 +1,819 @@
+{
+  "info": {
+    "name": "CampusWork API",
+    "description": "Complete API test collection for CampusWork — a part-time job system for university students.\n\n## How to use\n1. Import this file into Postman\n2. Set the `base_url` variable to `http://127.0.0.1:8000`\n3. Run requests in the order they appear — Auth first, then by role\n4. Tokens are saved automatically after login",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",         "value": "http://127.0.0.1:8000" },
+    { "key": "student_token",    "value": "" },
+    { "key": "business_token",   "value": "" },
+    { "key": "admin_token",      "value": "" },
+    { "key": "job_id",           "value": "" },
+    { "key": "application_id",   "value": "" },
+    { "key": "conflict_id",      "value": "" },
+    { "key": "class_id",         "value": "" }
+  ],
+  "item": [
+
+    {
+      "name": "1. Auth",
+      "item": [
+
+        {
+          "name": "Register student",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const res = pm.response.json();",
+              "if (res.token) pm.collectionVariables.set('student_token', res.token);",
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.test('Has token', () => pm.expect(res.token).to.be.a('string'));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Student\",\n  \"email\": \"teststudent@ug.edu.gh\",\n  \"password\": \"password\",\n  \"password_confirmation\": \"password\",\n  \"role\": \"student\",\n  \"student_id\": \"UG/2024/999\",\n  \"faculty\": \"Engineering\",\n  \"course\": \"Computer Science\",\n  \"year_of_study\": 2\n}"
+            },
+            "url": "{{base_url}}/api/auth/register"
+          }
+        },
+
+        {
+          "name": "Register business",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const res = pm.response.json();",
+              "if (res.token) pm.collectionVariables.set('business_token', res.token);",
+              "pm.test('Status 201', () => pm.response.to.have.status(201));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Business Owner\",\n  \"email\": \"testbiz@campus.gh\",\n  \"password\": \"password\",\n  \"password_confirmation\": \"password\",\n  \"role\": \"business\",\n  \"business_name\": \"Test Café\",\n  \"location\": \"Near Main Gate, UG\",\n  \"contact_number\": \"024 000 1111\",\n  \"description\": \"A test café on campus\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/register"
+          }
+        },
+
+        {
+          "name": "Login as student",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const res = pm.response.json();",
+              "if (res.token) pm.collectionVariables.set('student_token', res.token);",
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Role is student', () => pm.expect(res.role).to.eql('student'));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"kwame@st.ug.edu.gh\",\n  \"password\": \"password\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/login"
+          }
+        },
+
+        {
+          "name": "Login as business",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const res = pm.response.json();",
+              "if (res.token) pm.collectionVariables.set('business_token', res.token);",
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Role is business', () => pm.expect(res.role).to.eql('business'));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"cafe@legon.gh\",\n  \"password\": \"password\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/login"
+          }
+        },
+
+        {
+          "name": "Login as admin",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const res = pm.response.json();",
+              "if (res.token) pm.collectionVariables.set('admin_token', res.token);",
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Role is admin', () => pm.expect(res.role).to.eql('admin'));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@ug.edu.gh\",\n  \"password\": \"password\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/login"
+          }
+        },
+
+        {
+          "name": "Get current user (me)",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Has user object', () => pm.expect(pm.response.json().user).to.be.an('object'));"
+            ]}
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/me"
+          }
+        },
+
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/auth/logout"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "2. Public Jobs",
+      "item": [
+
+        {
+          "name": "Get all open jobs",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const res = pm.response.json();",
+              "if (res.jobs && res.jobs.length > 0) pm.collectionVariables.set('job_id', res.jobs[0].id);",
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns jobs array', () => pm.expect(res.jobs).to.be.an('array'));"
+            ]}
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/jobs"
+          }
+        },
+
+        {
+          "name": "Search jobs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/jobs?search=barista",
+              "query": [{ "key": "search", "value": "barista" }]
+            }
+          }
+        },
+
+        {
+          "name": "Get single job",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Has shifts', () => pm.expect(pm.response.json().job.shifts).to.be.an('array'));"
+            ]}
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/jobs/{{job_id}}"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "3. Student — Schedule",
+      "item": [
+
+        {
+          "name": "Get class schedule",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/student/class-schedule"
+          }
+        },
+
+        {
+          "name": "Add a class",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const res = pm.response.json();",
+              "if (res.class_schedule) pm.collectionVariables.set('class_id', res.class_schedule.id);",
+              "pm.test('Status 201', () => pm.response.to.have.status(201));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject_name\": \"Database Systems\",\n  \"subject_code\": \"CS301\",\n  \"day_of_week\": \"monday\",\n  \"start_time\": \"09:00\",\n  \"end_time\": \"11:00\",\n  \"semester\": \"Semester 2\",\n  \"academic_year\": \"2024/2025\"\n}"
+            },
+            "url": "{{base_url}}/api/student/class-schedule"
+          }
+        },
+
+        {
+          "name": "Update a class",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"start_time\": \"10:00\",\n  \"end_time\": \"12:00\"\n}"
+            },
+            "url": "{{base_url}}/api/student/class-schedule/{{class_id}}"
+          }
+        },
+
+        {
+          "name": "Delete a class",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/student/class-schedule/{{class_id}}"
+          }
+        },
+
+        {
+          "name": "Get work schedule",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/student/work-schedule"
+          }
+        },
+
+        {
+          "name": "Get full schedule (timetable)",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Has schedule array', () => pm.expect(pm.response.json().schedule).to.be.an('array'));"
+            ]}
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/student/full-schedule"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "4. Student — Applications",
+      "item": [
+
+        {
+          "name": "Check conflict before applying",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const res = pm.response.json();",
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Has has_conflict flag', () => pm.expect(res).to.have.property('has_conflict'));",
+              "console.log('Conflict result:', JSON.stringify(res));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job_id\": {{job_id}}\n}"
+            },
+            "url": "{{base_url}}/api/student/check-conflict"
+          }
+        },
+
+        {
+          "name": "Apply for a job",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const res = pm.response.json();",
+              "if (res.application) pm.collectionVariables.set('application_id', res.application.id);",
+              "pm.test('Status 201', () => pm.response.to.have.status(201));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job_id\": {{job_id}}\n}"
+            },
+            "url": "{{base_url}}/api/student/applications"
+          }
+        },
+
+        {
+          "name": "Get my applications",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns applications', () => pm.expect(pm.response.json().applications).to.be.an('array'));"
+            ]}
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/student/applications"
+          }
+        },
+
+        {
+          "name": "Withdraw an application",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/student/applications/{{application_id}}"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "5. Business — Jobs",
+      "item": [
+
+        {
+          "name": "Get my job listings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{business_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/business/jobs"
+          }
+        },
+
+        {
+          "name": "Post a new job",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const res = pm.response.json();",
+              "if (res.job) pm.collectionVariables.set('job_id', res.job.id);",
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.test('Has shifts', () => pm.expect(res.job.shifts).to.be.an('array'));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{business_token}}" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Waiter\",\n  \"description\": \"Serve customers and maintain cleanliness in dining area.\",\n  \"location\": \"Main Campus\",\n  \"hourly_rate\": 14,\n  \"hours_per_week\": 10,\n  \"slots_available\": 2,\n  \"status\": \"open\",\n  \"shifts\": [\n    { \"day_of_week\": \"tuesday\",  \"start_time\": \"17:00\", \"end_time\": \"21:00\" },\n    { \"day_of_week\": \"thursday\", \"start_time\": \"17:00\", \"end_time\": \"21:00\" }\n  ]\n}"
+            },
+            "url": "{{base_url}}/api/business/jobs"
+          }
+        },
+
+        {
+          "name": "Update a job",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{business_token}}" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hourly_rate\": 16,\n  \"slots_available\": 3\n}"
+            },
+            "url": "{{base_url}}/api/business/jobs/{{job_id}}"
+          }
+        },
+
+        {
+          "name": "Close a job",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{business_token}}" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"closed\"\n}"
+            },
+            "url": "{{base_url}}/api/business/jobs/{{job_id}}"
+          }
+        },
+
+        {
+          "name": "Delete a job",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{business_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/business/jobs/{{job_id}}"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "6. Business — Applicants",
+      "item": [
+
+        {
+          "name": "Get applicants for a job",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{business_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/business/jobs/{{job_id}}/applications"
+          }
+        },
+
+        {
+          "name": "Accept an applicant",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Status is accepted', () => pm.expect(pm.response.json().application.status).to.eql('accepted'));"
+            ]}
+          }],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{business_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/business/applications/{{application_id}}/accept"
+          }
+        },
+
+        {
+          "name": "Reject an applicant",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{business_token}}" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Position has been filled.\"\n}"
+            },
+            "url": "{{base_url}}/api/business/applications/{{application_id}}/reject"
+          }
+        },
+
+        {
+          "name": "Get business work schedules",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{business_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/business/work-schedules"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "7. Admin — Students",
+      "item": [
+
+        {
+          "name": "Get all students",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns students', () => pm.expect(pm.response.json().students).to.be.an('array'));"
+            ]}
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/admin/students"
+          }
+        },
+
+        {
+          "name": "Get single student",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/admin/students/2"
+          }
+        },
+
+        {
+          "name": "Update student max hours",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]}
+          }],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"max_work_hours_per_week\": 15\n}"
+            },
+            "url": "{{base_url}}/api/admin/students/2/max-hours"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "8. Admin — Businesses",
+      "item": [
+
+        {
+          "name": "Get all businesses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/admin/businesses"
+          }
+        },
+
+        {
+          "name": "Approve a business",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]}
+          }],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/admin/businesses/5/approve"
+          }
+        },
+
+        {
+          "name": "Suspend a business",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/admin/businesses/5/suspend"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "9. Admin — Conflicts",
+      "item": [
+
+        {
+          "name": "Get all conflicts",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const res = pm.response.json();",
+              "if (res.conflicts && res.conflicts.length > 0) pm.collectionVariables.set('conflict_id', res.conflicts[0].id);",
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]}
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/admin/conflicts"
+          }
+        },
+
+        {
+          "name": "Get unresolved conflicts only",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/conflicts?status=unresolved",
+              "query": [{ "key": "status", "value": "unresolved" }]
+            }
+          }
+        },
+
+        {
+          "name": "Notify student about conflict",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notify\": [\"student\"],\n  \"message\": \"Your work shift clashes with a scheduled lecture. Please contact the registry.\"\n}"
+            },
+            "url": "{{base_url}}/api/admin/conflicts/{{conflict_id}}/notify"
+          }
+        },
+
+        {
+          "name": "Notify both student and business",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notify\": [\"student\", \"business\"],\n  \"message\": \"A schedule conflict has been detected. Please review and adjust accordingly.\"\n}"
+            },
+            "url": "{{base_url}}/api/admin/conflicts/{{conflict_id}}/notify"
+          }
+        },
+
+        {
+          "name": "Resolve a conflict",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Status is resolved', () => pm.expect(pm.response.json().conflict.status).to.eql('resolved'));"
+            ]}
+          }],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/admin/conflicts/{{conflict_id}}/resolve"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "10. Admin — Jobs",
+      "item": [
+
+        {
+          "name": "Get all jobs (admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/admin/jobs"
+          }
+        },
+
+        {
+          "name": "Filter jobs by status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/jobs?status=open",
+              "query": [{ "key": "status", "value": "open" }]
+            }
+          }
+        },
+
+        {
+          "name": "Force-close a job",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/admin/jobs/{{job_id}}/close"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "11. Notifications",
+      "item": [
+
+        {
+          "name": "Get notifications (student)",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Has unread_count', () => pm.expect(pm.response.json()).to.have.property('unread_count'));"
+            ]}
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/notifications"
+          }
+        },
+
+        {
+          "name": "Mark notification as read",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/notifications/1/read"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "12. Error cases",
+      "item": [
+
+        {
+          "name": "Login with wrong password",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Should return 422', () => pm.response.to.have.status(422));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"kwame@st.ug.edu.gh\",\n  \"password\": \"wrongpassword\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/login"
+          }
+        },
+
+        {
+          "name": "Access admin route as student",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Should return 403', () => pm.response.to.have.status(403));"
+            ]}
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }, { "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/admin/students"
+          }
+        },
+
+        {
+          "name": "Apply for same job twice",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Should return 422', () => pm.response.to.have.status(422));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job_id\": {{job_id}}\n}"
+            },
+            "url": "{{base_url}}/api/student/applications"
+          }
+        },
+
+        {
+          "name": "Access protected route without token",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Should return 401', () => pm.response.to.have.status(401));"
+            ]}
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/student/applications"
+          }
+        }
+
+      ]
+    }
+
+  ]
+}
